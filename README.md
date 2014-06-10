@@ -35,3 +35,18 @@ While quadratic bezier curves do have an exact expression for length, this is no
 For calculating the radii, the calculation tries to produce equal-length segments (as the radii are applied over equal-length segments). It does this using an "if partial_length > total_length/100". it stores the previous two end-points (starting at 0, 0, which cause the first radii to always be NaN (which the server treats like a straight)), and uses those to calculate the radii of a circle fitting those three points. This is implemented in ApproxBendRadii (which is a misnomer, left over from when I was approximating it).
 
 Straight switches are calculated using the same techniques, but instead of a quadratic curve, it's a cubic curve (again, with a cubic bezier). There are four parameters, to determine the middle two points. These are ((0.1, 0.25), (0.875, 0.75)), and are proportional with the height/length of the switch. Slipping is disabled from straights, so no radii can be calculated (though they could be). The length is implemented in StraightSwitchLength.
+
+
+# Strategy
+
+Throttle is implemented in speedbot.go, turbo in turbobot.go, switching in switchbot.go, and overtaking/bump prevention in oppbot.go
+
+The throttle strategy is to pick two throttles to some resolution for the next two turns (currently 1/32 resolution for the first, 1/8 to the second), then simulate a greedy throttle out some turns (currently 25). Whichever gets us farthest is selected (using the first turn).
+
+Turbo strategy was to use the longest straight(-ish) segment. I've upgraded it (DoTurbo2) to pick the turbo that gets us farthest by the time the next turbo is available (600 ticks between turbos).
+
+Switch strategy is using shortest route (with a small switch cost of 5%). This is calculated efficiently using memoization techniques.
+
+Overtaking is done by calculated an expected speed of each bot, and taking the switch which gets us to the next switch as fast as possible.
+
+Bump avoidance is done by reducing maxAngle based on how likely (and how hard) the closest bot is to bumping me, with a small increase in their speed.
