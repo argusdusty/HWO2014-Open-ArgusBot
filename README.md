@@ -16,7 +16,9 @@ All the algorithms are coded in logic.go, where the getNextPos function computes
 
 Position is calculated using a function that computes the next speed from the previous speed and the throttle, and two parameters, so:
 
-    nextSpeed = (1.0-P.D)*P.X*throttle + P.D*speed, where P.D is a drag parameter, and P.X is an engine power parameter. P.D is by default 0.98 (some people use P.D'=1.0-P.D = 0.02), and P.X is by default 10.0. In later competitions, P.D was constant.
+    nextSpeed = (1.0-P.D)*P.X*throttle + P.D*speed
+
+Where P.D is a drag parameter, and P.X is an engine power parameter. P.D is by default 0.98 (some people use P.D'=1.0-P.D = 0.02), and P.X is by default 10.0. In later competitions, P.D was constant.
 
 Angle is calculated using a more complicated function, computing the next delta_angle from the previous delta_angle, the previous angle, the previous speed, the radius of the bend you are currently on, and four parameters, so:
 
