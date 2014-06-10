@@ -1,0 +1,7 @@
+bot
+!/src/**
+*.dat
+*.py
+analyze.go
+*.json
+auto*
