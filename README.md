@@ -32,10 +32,15 @@ Switches had the most tricky physics. All switches are made up of 100 distinct r
 
 While quadratic bezier curves do have an exact expression for length, this is not used. Instead, the length is approximated (a little short), by calculating the straight-line-length between 10,000 points (100 points for each radii segment) along the bezier curve (equal-spaced t values). BendSwitchLength calculated this length. There is a bug in this code, where in actuality 10,001 points are used (with an extra piece on the end), which is why the switch going from opposite sides on a bend have slightly differing lengths (You may have noticed the difference is on the order of 1/10000 times their true length).
 
-    curve = lambda t: quadBez((0, 0), endPoint/2, endPoint, t/10000)
+    curve = lambda t: quadBez((0, 0), 2*midPoint-endPoint/2, endPoint, t/10000)
     switchLength = sum(dist(curve(t+1), curve(t)) for t in range(10001))
 
-(endPoint/2 -> (endPoint.x/2, endPoint.y/2), and make sure to calculate it correctly starting from (0, 0))
+Where endPoint/2 -> (endPoint.x/2, endPoint.y/2), and make sure to calculate it correctly starting from (0, 0), and midPoint is the angle/2, (startLane+endLane)/2 point. These are calculated using:
+
+    x = startRadius - cos(angle*pi/180)*pointRadius
+    y = -sin(angle*pi/180)*pointRadius
+
+With midPoint having radius = (startRadius+endRadius)/2, and angle = bendAngle/2
 
 For calculating the radii, the calculation tries to produce equal-length segments (as the radii are applied over equal-length segments). It does this using an "if partial_length > total_length/100", where partial length is calculated along those 10,000 points. It stores the previous two end-points (starting at 0, 0, which cause the first radii to always be NaN (which the server treats like a straight)), and uses those to calculate the radii of a circle fitting those three points. This is implemented in ApproxBendRadii (which is a misnomer, left over from when I was approximating it).
 
