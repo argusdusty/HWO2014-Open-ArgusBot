@@ -111,67 +111,6 @@ func isAhead(aCar, bCar BotCarPosition) bool {
 }
 
 func DoThrottle(TDat TrackData, Pos map[string]BotCarPosition, Color string, Plan []PlanSwitch, debug int) float64 {
-	steps := 1 << 5
-	n := 1 << 7
-	bc := steps + 1
-	bd := Pos[Color].InPieceDistance
-	bp := Pos[Color].PieceIndex
-	bl := Pos[Color].Lap
-	bt := 0.0
-	for i := 0; i <= n; i++ {
-		t := float64(n-i) / float64(n)
-		curPos := getNextPosSwitch(TDat, t, Plan, Pos[Color])
-		if math.Abs(curPos.Angle) > TDat.Params.MaxAngle {
-			continue
-		}
-		c := 1
-		for j := 0; j < steps; j++ {
-			curPos = greedyThrottle(TDat, curPos, Plan, c)
-			c++
-			if math.Abs(curPos.Angle) > TDat.Params.MaxAngle {
-				break
-			}
-			if hasEnded(TDat, curPos, c) {
-				break
-			}
-		}
-		if getMinAngle(TDat, curPos, Plan, c) > TDat.Params.MaxAngle {
-			continue
-		}
-		if c < bc {
-			bc = c
-			bt = float64(n-i) / float64(n)
-			bl = curPos.Lap
-			bp = curPos.PieceIndex
-			bd = curPos.InPieceDistance
-			//logMessage(debug+1, "Throttle Debug Found better end lap:", bt, bc, bl, bp, bd)
-			continue
-		}
-		if c > bc {
-			continue
-		}
-		if curPos.Lap < bl {
-			continue
-		} else if curPos.Lap == bl {
-			if curPos.PieceIndex < bp {
-				continue
-			} else if curPos.PieceIndex == bp {
-				if curPos.InPieceDistance < bd {
-					continue
-				}
-			}
-		}
-		bt = float64(n-i) / float64(n)
-		bl = curPos.Lap
-		bp = curPos.PieceIndex
-		bd = curPos.InPieceDistance
-		//logMessage(debug+1, "Throttle Debug Found better:", bt, c, bl, bp, bd)
-	}
-	logMessage(debug, "Throttle Debug Best:", bt, bc, bl, bp, bd)
-	return bt
-}
-
-func DoThrottle2(TDat TrackData, Pos map[string]BotCarPosition, Color string, Plan []PlanSwitch, debug int) float64 {
 	botPos := Pos[Color]
 	steps := 1 << 5
 	n := 1 << 5
@@ -183,27 +122,25 @@ func DoThrottle2(TDat TrackData, Pos map[string]BotCarPosition, Color string, Pl
 	bt := 0.0
 	temp := new(BotCarPosition)
 	temp2 := new(BotCarPosition)
+	prevPos := new(BotCarPosition)
 	curPos := new(BotCarPosition)
 	for i := 0; i <= n; i++ {
+		t := float64(n-i) / float64(n)
+		*prevPos = botPos
+		fastGetNextPosSwitch(TDat, t, Plan, prevPos)
+		if math.Abs(curPos.Angle) > TDat.Params.MaxAngle {
+			continue
+		}
 		for i2 := 0; i2 <= n2; i2++ {
-			t := float64(n-i) / float64(n)
 			t2 := float64(n2-i2) / float64(n2)
-			*curPos = botPos
-			//logMessage(2, "DoThrottle2 Step:", curPos.Speed, curPos.Angle, -1, t, t2, fastGetMinAngle(TDat, curPos, Plan, 0))
-			fastGetNextPosSwitch(TDat, t, Plan, curPos)
-			//logMessage(2, "DoThrottle2 Step:", curPos.Speed, curPos.Angle, 0, t, t2, fastGetMinAngle(TDat, curPos, Plan, 0))
-			if math.Abs(curPos.Angle) > TDat.Params.MaxAngle {
-				continue
-			}
+			*curPos = *prevPos
 			fastGetNextPosSwitch(TDat, t2, Plan, curPos)
-			//logMessage(2, "DoThrottle2 Step:", curPos.Speed, curPos.Angle, 1, t, t2, fastGetMinAngle(TDat, curPos, Plan, 0))
 			if math.Abs(curPos.Angle) > TDat.Params.MaxAngle {
 				continue
 			}
 			c := 2
 			for j := 0; j < steps; j++ {
 				fastGreedyThrottle(TDat, curPos, temp, temp2, Plan, c)
-				//logMessage(2, "DoThrottle2 Step:", curPos.Speed, curPos.Angle, c, t, t2, fastGetMinAngle(TDat, curPos, Plan, 0))
 				c++
 				if math.Abs(curPos.Angle) > TDat.Params.MaxAngle {
 					break
@@ -221,7 +158,6 @@ func DoThrottle2(TDat TrackData, Pos map[string]BotCarPosition, Color string, Pl
 				bl = curPos.Lap
 				bp = curPos.PieceIndex
 				bd = curPos.InPieceDistance
-				//logMessage(debug+1, "Throttle2 Debug Found better end lap:", t, t2, bc, bl, bp, bd, curPos.Angle, fastGetMinAngle(TDat, curPos, Plan, c))
 				continue
 			}
 			if c > bc {
@@ -242,9 +178,8 @@ func DoThrottle2(TDat TrackData, Pos map[string]BotCarPosition, Color string, Pl
 			bl = curPos.Lap
 			bp = curPos.PieceIndex
 			bd = curPos.InPieceDistance
-			//logMessage(debug+1, "Throttle2 Debug Found better:", t, t2, c, bl, bp, bd, curPos.Angle)
 		}
 	}
-	logMessage(debug, "Throttle2 Debug Best:", bt, bc, bl, bp, bd)
+	logMessage(debug, "Throttle Debug Best:", bt, bc, bl, bp, bd)
 	return bt
 }

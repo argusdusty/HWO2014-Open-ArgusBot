@@ -4,10 +4,7 @@ import (
 	"errors"
 	"net"
 	"os"
-	"runtime"
 	"strconv"
-	"sync"
-	"time"
 )
 
 const BOTKEY = "OA2ydginf4cUsA"

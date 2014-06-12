@@ -280,7 +280,7 @@ func (Bot *FullBot) HandlePositions(positions []CarPosition, tick int) {
 		sendPing(Bot.Writer)
 		return
 	}
-	throttle := DoThrottle2(Bot.TDat, newPos, Bot.Color, Bot.SwitchPlan, 1)
+	throttle := DoThrottle(Bot.TDat, newPos, Bot.Color, Bot.SwitchPlan, 1)
 	if int(throttle*100000.0+0.5) != int(Bot.CurThrottle*100000.0+0.5) {
 		sendThrottle(Bot.Writer, throttle)
 		Bot.CurThrottle = throttle
