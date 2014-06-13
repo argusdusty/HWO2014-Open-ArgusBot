@@ -95,21 +95,6 @@ func greedyThrottle(TDat TrackData, Pos BotCarPosition, Plan []PlanSwitch, timeS
 	return getNextPosSwitch(TDat, 0.0, Plan, Pos)
 }
 
-func isAhead(aCar, bCar BotCarPosition) bool {
-	if aCar.Lap < bCar.Lap {
-		return false
-	} else if aCar.Lap == bCar.Lap {
-		if aCar.PieceIndex < bCar.PieceIndex {
-			return false
-		} else if aCar.PieceIndex == bCar.PieceIndex {
-			if aCar.InPieceDistance < bCar.InPieceDistance {
-				return false
-			}
-		}
-	}
-	return true
-}
-
 func DoThrottle(TDat TrackData, Pos map[string]BotCarPosition, Color string, Plan []PlanSwitch, debug int) float64 {
 	botPos := Pos[Color]
 	steps := 1 << 5
